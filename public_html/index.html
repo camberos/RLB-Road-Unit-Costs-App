@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    </head>
+    <body ng-app="myApp" ng-controller="userCtrl">
+
+        <p class="bg-primary col-sm-12 text-center">Department of Infrastructure and Regional Development <br>
+            RFO 10012302:  Unit Cost Framework <br>Sample Output
+        </p>
+        
+        <div id="contanerApp" class="container">
+        <h3>RLB</h3>
+
+        <form class="form-horizontal">
+                
+                <!----------- Load Regions from server ----------->
+                <div class="form-group">
+                  <label class="col-sm-2">Region</label>
+                  <div class="col-sm-3">
+                      <select class="form-control" ng-model="model.region" >
+                           <option value='' selected>Select Region</option>
+                           <option ng-repeat="region in regions" value="{{region.id}}">{{region.name}}</option>
+                      </select>
+                  </div>
+                  <div class="col-sm-2">{{ model.region }}</div>
+                </div> 
+                <!----------- Load Road Classification from server ----------->
+                <div class="form-group">
+                  <label class="col-sm-2">Road Classification</label>
+                  <div class="col-sm-3">
+                      <select class="form-control" ng-model="model.roadClassification" convert-to-number>
+                            <option value=''>Select Road Classification</option>
+                            <option ng-repeat="roadClassification in roadClassifications" value="{{roadClassification.id}}">{{roadClassification.name}}</option>
+                      </select>
+                  </div>
+                  <div class="col-sm-2">{{ model.roadClassification }}</div>
+                </div> 
+                <!----------- Load Road Type from server ----------->
+                <div class="form-group">
+                  <label class="col-sm-2">Road Type</label>
+                  <div class="col-sm-3">
+                      <select class="form-control" ng-model="model.roadType" convert-to-number>
+                           <option value=''>Select Road Types</option>
+                           <option ng-repeat="roadType in roadTypes" value="{{roadType.id}}">{{roadType.name}}</option>
+                      </select>
+                  </div>
+                  <div class="col-sm-2">{{ model.roadType }}</div>
+                </div>    
+                <!----------- Load Road Lanes from server ----------->
+                <div class="form-group">
+                  <label class="col-sm-2">Road Lanes</label>
+                  <div class="col-sm-3">
+                      <select class="form-control" ng-model="model.roadLanes" convert-to-number>
+                            <option value=''>Select Road Lines</option>
+                            <option ng-repeat="roadLane in roadLanes" value="{{roadLane.id}}">{{roadLane.name}}</option>
+                      </select>
+                  </div>
+                    <div class="col-sm-2">{{ model.roadLanes }}</div>
+                </div>
+            
+                <div class="form-group">
+                    <label class="col-sm-2">Date of Costing</label>
+                    <div class="col-sm-2"><span>{{1288323623006 | date:'medium'}}</span></div>
+                </div>
+        </form>
+        <!----------- Direct Cost Calculation ----------->
+        <div class="bg-info col-sm-12">
+            <div class="col-sm-9">
+                <h4>Road Direct Unit Cost</h4>
+            </div>
+            <div class="col-sm-3">
+                <h4>$ {{RoadDirectUnitCost(model.region,model.roadClassification,model.roadType,model.roadLanes)}} /Km</h4>
+            </div>
+        </div>
+        <!----------- Lenght of Project Road Cost Calculation ----------->
+        <div class="col-sm-12">
+            <div class="col-sm-9">
+                <h4>Length of Project Road</h4>
+            </div>
+            <div  class="form-group form-group-sm">
+                <div class="col-sm-3">
+                    <input class="form-control" type="text" ng-model="model.lengthProjectRoad" id="formGroupInputSmall" placeholder="km" />
+                </div>
+            </div>
+        </div>
+        <!----------- Project Base Cost Calculation ----------->
+        <div class="bg-info col-sm-12">
+            <div class="col-sm-9">
+                <h4>Project Base Cost</h4>
+            </div>
+            <div class="col-sm-3">
+                <h4>$ {{ProjectBaseCost(RoadDirectUnitCost(model.region,model.roadClassification,model.roadType,model.roadLanes),model.lengthProjectRoad)}}</h4>
+            </div>
+        </div> 
+        
+        <!----------- Modal 'Select direct items per road project button ----------->
+        <div class="col-sm-12 text-center">
+            <button type="button" class="btn btn-large btn-primary navbar-btn"  data-toggle="modal" data-target="#myModal1">
+              Select direct items per road project 
+            </button>
+        </div>
+        
+        <!----------- Model Earth works fields ----------->
+        <table id="earthworks" ng-show="showModel2" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Earth Works</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="earthWork in earthWorks">
+            <td>{{ earthWork.definition }}</td>                  
+            <td>{{ earthWork.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text"  ng-model="earthWork.totalQty" id="formGroupInputSmall" placeholder="km" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ earthWork.rate }}</td>
+            <td>$ {{ totalAdditionalCost(earthWork.rate,earthWork.totalQty) }}</td>
+          </tr></tbody>
+        </table>
+        <h4 ng-show="showModel2">Total: $ {{ getTotalEarthWorks() }}</h4>        
+        <hr ng-show="showModel2">
+        
+        <!----------- Model retaining walls works fields ----------->
+        <table id="retainingwalls" ng-show="showModel3" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Retaining  Walls</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="retainingWall in retainingWalls">
+            <td>{{ retainingWall.definition }}</td>                  
+            <td>{{ retainingWall.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="retainingWall.totalQty" id="formGroupInputSmall" placeholder="km" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ retainingWall.rate }}</td>
+            <td>$ {{ totalAdditionalCost(retainingWall.rate,retainingWall.totalQty) }}</td>
+          </tr></tbody>
+        </table>
+        <h4 ng-show="showModel3">Total: $ {{ getTotalRetainingWalls() }}</h4>
+        <hr ng-show="showModel3">
+        
+        <!----------- Model drainage works fields ----------->
+        <table id="drainage" ng-show="showModel4" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Drainage</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="drain in drainage">
+            <td>{{ drain.definition }}</td>                  
+            <td>{{ drain.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="drain.totalQty" id="formGroupInputSmall" placeholder="km" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ drain.rate }}</td>
+            <td>$ {{ totalAdditionalCost(drain.rate,drain.totalQty) }}</td>
+          </tr></tbody>
+        </table>
+        <h4 ng-show="showModel4">Total: $ {{ getTotalDrainage() }}</h4>
+        <hr ng-show="showModel4">
+        
+        <!----------- Model bridges works fields ----------->
+        <table id="bridges" ng-show="showModel5" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Bridges</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="bridge in bridges">
+            <td>{{ bridge.definition }}</td>                  
+            <td>{{ bridge.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="bridge.totalQty" id="formGroupInputSmall" placeholder="km" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ bridge.rate }}</td>
+            <td>$ {{ totalAdditionalCost(bridge.rate,bridge.totalQty) }}</td>
+          </tr></tbody>
+        </table>        
+        <h4 ng-show="showModel5">Total: $ {{ getTotalBridges() }}</h4>
+        <hr ng-show="showModel5">
+        
+        <!----------- Model intersections works fields ----------->
+        <table id="intersections" ng-show="showModel6" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Intersections</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="intersection in intersections">
+            <td>{{ intersection.definition }}</td>                  
+            <td>{{ intersection.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="intersection.totalQty" id="formGroupInputSmall" placeholder="km" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ intersection.rate }}</td>
+            <td>$ {{ totalAdditionalCost(intersection.rate,intersection.totalQty) }}</td>
+          </tr></tbody>
+        </table>         
+        <h4 ng-show="showModel6">Total: $ {{ getTotalIntersections() }}</h4>
+        <hr ng-show="showModel6">
+        
+        <h3>Total Direct Costs: $ {{ totalDirectCost() }}</h3>
+        <hr>
+        
+        <div class="bg-info col-sm-12">
+            <div class="col-sm-9">
+                <h4>Total Project Base/Direct Cost </h4>
+            </div>
+            <div class="col-sm-3">
+                <h4>$ {{ TotalProjectBaseDirectCost() }} </h4>
+            </div>
+        </div>
+        
+        <!----------- Model indirect items for full project ----------->
+        <table id="intersections" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Intersections</th>
+            <th>Surface</th>
+            <th>Total Qty</th>
+            <th>Rate</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="indirectItem in indirectItems">
+            <td>{{ indirectItem.definition }}</td>                  
+            <td>{{ indirectItem.surface }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="model7.totalQuantity" id="formGroupInputSmall" placeholder="" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ concept.rate }}</td>
+            <td>$ {{ totalAdditionalCost(indirectItem.rate,model7.totalQuantity) }}</td>
+          </tr></tbody>
+        </table> 
+        <h3>Total Indirect Costs:</h3>
+        <hr>
+        
+        <div class="bg-info col-sm-12">
+            <div class="col-sm-9">
+                <h4>Total Road Cost b/f Owner cost, contingency & escalation </h4>
+            </div>
+            <div class="col-sm-3">
+                <h4>$0 </h4>
+            </div>
+        </div>
+        
+        <!----------- Model client Direct Costs ----------->
+        <table id="clientDirectCosts" class="table table-hover table-striped">
+          <thead><tr>
+            <th>Indirect Items for full project </th>
+            <th>Unit</th>
+            <th>Total Qty</th>
+            <th>Total Additional Cost</th>
+
+          </tr></thead>
+          <tbody><tr ng-repeat="clientDirectCost in clientDirectCosts">
+            <td>{{ clientDirectCost.definition }}</td>                  
+            <td>{{ clientDirectCost.unit }}</td>
+            <td>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" ng-model="model8.totalQuantity" id="formGroupInputSmall" placeholder="" />
+                    </div>
+                </div>
+            </td>
+            <td>{{ clientDirectCost.rate }}</td>
+            <td>$ {{ totalAdditionalCost(clientDirectCost.rate,model8.totalQuantity) }}</td>
+          </tr></tbody>
+        </table> 
+        <h3>Total Client Costs:</h3>
+        <hr>
+
+        <div class="bg-info col-sm-12">
+            <div class="col-sm-9">
+                <h4>Total Gross Road Cost  b/f escalation & contingency</h4>
+            </div>
+            <div class="col-sm-3">
+                <h4>$0 </h4>
+            </div>
+        </div>
+
+        
+        
+        </div>
+        
+        
+        
+        <div id="myModal1" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h4 class="modal-title">Indirect items for full project</h4>
+                </div>
+                <div class="modal-body">
+                    <p></p>
+                    <form role="form">
+                      <div class="checkbox">
+                        <label><input type="checkbox" value="" ng-model="showModel2">Earth Works</label>
+                      </div>
+                      <div class="checkbox">
+                        <label><input type="checkbox" value="" ng-model="showModel3">Retaining Walls</label>
+                      </div>
+                      <div class="checkbox">
+                        <label><input type="checkbox" value="" ng-model="showModel4">Drainage</label>
+                      </div>
+                      <div class="checkbox">
+                        <label><input type="checkbox" value="" ng-model="showModel5">Bridges</label>
+                      </div>                        
+                      <div class="checkbox">
+                        <label><input type="checkbox" value="" ng-model="showModel6">Intersections</label>
+                      </div>                                                
+                    </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+        <div class="col-sm-12 text-center " role="group" aria-label="...">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-large btn-primary navbar-btn" ng-click="saveReport()">Save Report</button>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-large btn-primary navbar-btn" ng-click="printReport()">Print</button>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-large btn-primary navbar-btn" ng-click="exportPDF()">Export PDF</button>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-large btn-primary navbar-btn" ng-click="exportCSV()">Export CSV</button>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-large btn-primary navbar-btn" ng-click="resetForm()">Reset Form</button>
+            </div>
+          </div>
+        
+
+    <script src = "js/app.js"></script>
+    </body>
+</html>
